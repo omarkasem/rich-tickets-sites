@@ -28,10 +28,6 @@ class RTS_Snippets {
         // Load More JS Snippets
         add_action('wp_footer', array( $this, 'load_more_js' ), 100);
 
-        // Add search results override
-        add_filter( 'astra_get_content_layout', array( $this, 'override_search_layout' ) );
-        add_filter( 'astra_get_content_layout_class', array( $this, 'override_search_layout_class' ) );
-        add_filter( 'astra_entry_content_markup', array( $this, 'custom_search_content' ) );
     }
 
     function load_more_js() {
@@ -161,6 +157,10 @@ class RTS_Snippets {
             'order' => 'DESC',
             'posts_per_page' => 10
         );
+
+        if(is_search()){
+            $args['s'] = get_search_query();
+        }
     
         // Wrap the content in a div with elementor-compatible class
         $string = '<div class="elementor-widget-container events-list-container">';
@@ -180,6 +180,8 @@ class RTS_Snippets {
                             </li>';
             }
             $string .= '</ul>';
+        } else if ( is_search() ) {
+            $string .= '<div class="no-results-found">No results found for "' . esc_html( get_search_query() ) . '"</div>';
         }
         
         if ( $query->max_num_pages > 1 ) {
@@ -351,27 +353,5 @@ class RTS_Snippets {
         return $string;
     }
 
-    function override_search_layout( $layout ) {
-        if ( is_search() ) {
-            return 'plain-container';
-        }
-        return $layout;
-    }
-
-    function override_search_layout_class( $class ) {
-        if ( is_search() ) {
-            return 'ast-plain-container';
-        }
-        return $class;
-    }
-
-    function custom_search_content( $content ) {
-        if ( !is_search() ) {
-            return $content;
-        }
-
-        $search_query = get_search_query();
-        return do_shortcode( '[WP_VST_EVENT name="' . esc_attr( $search_query ) . '"]' );
-    }
 
 } 
